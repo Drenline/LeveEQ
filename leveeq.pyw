@@ -44,7 +44,8 @@ FS = 48000.0
 F_MIN, F_MAX = 20.0, 20000.0
 G_MIN, G_MAX = -12.0, 12.0
 Q_MIN, Q_MAX = 0.5, 10.0
-N_FILTERS = 10
+N_FILTERS = 10      # bandas de um EQ novo
+MAX_FILTERS = 50    # dá para adicionar bandas até este limite
 
 # ---------------------------------------------------------------- idiomas
 # Para adicionar um idioma: copie o bloco "en", traduza os textos e adicione o
@@ -56,7 +57,9 @@ STRINGS = {
         "power": "EQ ligado (geral)", "language": "🌐",
         "device": "Dispositivo", "active": "Ativo", "preset": "Preset",
         "save": "Salvar", "delete": "Excluir", "import_sonar": "Importar do Sonar",
-        "graph_hint": "Arraste os pontos • roda do mouse = Q • duplo clique = liga/desliga o filtro",
+        "graph_hint": "Arraste os pontos • roda do mouse = Q • duplo clique no ponto = liga/desliga • "
+                      "duplo clique no vazio = nova banda • botão direito no ponto = remover",
+        "add_band": "+ Adicionar banda", "remove_band": "Remover banda", "max_bands": "Limite de {n} bandas",
         "filter_on": "Filtro ligado", "type": "Tipo", "freq": "Frequência (Hz)", "gain": "Ganho (dB)", "q": "Q",
         "reset_filter": "Zerar filtro", "reset_all": "Zerar tudo",
         "preamp": "Ganho geral", "bass": "Graves", "clarity": "Voz (clareza)", "treble": "Agudos",
@@ -94,7 +97,9 @@ STRINGS = {
         "power": "EQ on (global)", "language": "🌐",
         "device": "Device", "active": "Active", "preset": "Preset",
         "save": "Save", "delete": "Delete", "import_sonar": "Import from Sonar",
-        "graph_hint": "Drag the points • mouse wheel = Q • double-click = turn the filter on/off",
+        "graph_hint": "Drag the points • mouse wheel = Q • double-click a point = on/off • "
+                      "double-click empty space = new band • right-click a point = remove",
+        "add_band": "+ Add band", "remove_band": "Remove band", "max_bands": "{n} bands maximum",
         "filter_on": "Filter on", "type": "Type", "freq": "Frequency (Hz)", "gain": "Gain (dB)", "q": "Q",
         "reset_filter": "Reset filter", "reset_all": "Reset all",
         "preamp": "Overall gain", "bass": "Bass", "clarity": "Voice (clarity)", "treble": "Treble",
@@ -196,9 +201,16 @@ POINT_COLORS = ["#ff6b1a", "#ffb020", "#e8e04a", "#7ad35a", "#3cc7a0",
 
 # ---------------------------------------------------------------- modelo
 
+def point_color(i):
+    return POINT_COLORS[i % len(POINT_COLORS)]
+
+
+def new_filter(freq=1000.0, gain=0.0):
+    return {"enabled": True, "type": "peakingEQ", "frequency": float(freq), "gain": float(gain), "qFactor": 0.7071}
+
+
 def default_filter(i):
-    return {"enabled": True, "type": "peakingEQ", "frequency": float(DEFAULT_FREQS[i]),
-            "gain": 0.0, "qFactor": 0.7071}
+    return new_filter(DEFAULT_FREQS[i] if i < len(DEFAULT_FREQS) else 1000.0)
 
 
 def default_channel(kind):
@@ -466,18 +478,21 @@ def read_sonar_configs():
 def sonar_to_channel(d, kind):
     ch = default_channel(kind)
     peq = d.get("parametricEQ", {})
-    for i in range(N_FILTERS):
-        sf = peq.get(f"filter{i + 1}")
-        if not sf:
-            continue
+    # importa todas as bandas que o preset tiver (filter1, filter2, ... filterN)
+    nums = sorted(int(k[6:]) for k in peq if k.startswith("filter") and k[6:].isdigit())
+    filters = []
+    for n in nums[:MAX_FILTERS]:
+        sf = peq[f"filter{n}"]
         t = SONAR_TYPE_ALIASES.get(sf.get("type"), sf.get("type"))
-        ch["filters"][i] = {
+        filters.append({
             "enabled": bool(sf.get("enabled", True)) and t in FILTER_TYPES,
             "type": t if t in FILTER_TYPES else "peakingEQ",
-            "frequency": clamp(float(sf.get("frequency", DEFAULT_FREQS[i])), F_MIN, F_MAX),
+            "frequency": clamp(float(sf.get("frequency", 1000)), F_MIN, F_MAX),
             "gain": clamp(float(sf.get("gain", 0)), G_MIN, G_MAX),
             "qFactor": clamp(float(sf.get("qFactor", 0.7071)), Q_MIN, Q_MAX),
-        }
+        })
+    if filters:
+        ch["filters"] = filters
     if not peq.get("enabled", True):
         for f in ch["filters"]:
             f["enabled"] = False
@@ -523,6 +538,7 @@ class EQGraph(tk.Canvas):
         self.bind("<ButtonRelease-1>", self.on_release)
         self.bind("<MouseWheel>", self.on_wheel)
         self.bind("<Double-Button-1>", self.on_double)
+        self.bind("<Button-3>", self.on_right)
 
     # coordenadas
     def fx(self, f):
@@ -582,7 +598,7 @@ class EQGraph(tk.Canvas):
         sel = self.app.selected
         for i, f in enumerate(ch["filters"]):
             x, y = self.point_pos(f)
-            color = POINT_COLORS[i] if f["enabled"] and active else COLORS["off"]
+            color = point_color(i) if f["enabled"] and active else COLORS["off"]
             r = 10 if i == sel else 8
             if i == sel:
                 self.create_oval(x - r - 4, y - r - 4, x + r + 4, y + r + 4, outline=color, width=2)
@@ -634,7 +650,15 @@ class EQGraph(tk.Canvas):
         if i is not None:
             f = self.app.channel()["filters"][i]
             f["enabled"] = not f["enabled"]
+            self.app.refresh_editor()
             self.app.changed()
+        else:  # duplo clique num lugar vazio cria uma banda nova ali
+            self.app.add_band(round(self.xf(e.x), 1), round(self.yg(e.y), 1))
+
+    def on_right(self, e):
+        i = self.hit(e.x, e.y)
+        if i is not None:
+            self.app.remove_band(i)
 
 
 class App(tk.Tk):
@@ -698,8 +722,9 @@ class App(tk.Tk):
     def normalize(data, kind, guid=""):
         ch = default_channel(kind)
         ch.update({kk: vv for kk, vv in data.items() if kk in ch})
-        if len(ch["filters"]) != N_FILTERS:
+        if not ch["filters"]:
             ch["filters"] = [default_filter(i) for i in range(N_FILTERS)]
+        ch["filters"] = ch["filters"][:MAX_FILTERS]
         for f in ch["filters"]:  # presets salvos por versões antigas
             f["type"] = SONAR_TYPE_ALIASES.get(f["type"], f["type"]) or "peakingEQ"
             if f["type"] not in FILTER_TYPES:
@@ -813,15 +838,15 @@ class App(tk.Tk):
 
         ed = ttk.Frame(bottom, style="Panel.TFrame", padding=12)
         ed.pack(side="left", fill="both", expand=True)
-        row0 = ttk.Frame(ed, style="Panel.TFrame")
-        row0.pack(fill="x")
+        # botões numerados das bandas (recriados quando você adiciona/remove bandas)
+        self.band_frame = tk.Frame(ed, bg=COLORS["panel"])
+        self.band_frame.pack(fill="x")
         self.sel_btns = []
-        for i in range(N_FILTERS):
-            b = tk.Label(row0, text=str(i + 1), width=3, bg=COLORS["panel2"], fg=COLORS["fg"],
-                         font=("Segoe UI Semibold", 10), cursor="hand2", pady=3)
-            b.pack(side="left", padx=2)
-            b.bind("<Button-1>", lambda e, i=i: self.select(i))
-            self.sel_btns.append(b)
+        row0 = ttk.Frame(ed, style="Panel.TFrame")
+        row0.pack(fill="x", pady=(8, 0))
+        ttk.Button(row0, text=t("add_band"), command=self.add_band).pack(side="left")
+        self.remove_btn = ttk.Button(row0, text=t("remove_band"), command=lambda: self.remove_band(self.selected))
+        self.remove_btn.pack(side="left", padx=(4, 0))
         self.f_enabled = tk.BooleanVar()
         ttk.Checkbutton(row0, text=t("filter_on"), variable=self.f_enabled, command=self.on_field).pack(side="left", padx=12)
 
@@ -879,8 +904,38 @@ class App(tk.Tk):
     # ---- ações
     def switch(self, kind):
         self.kind = kind
-        self.selected = min(self.selected, N_FILTERS - 1)
         self.refresh_all()
+
+    def add_band(self, freq=1000.0, gain=0.0):
+        filters = self.channel()["filters"]
+        if len(filters) >= MAX_FILTERS:
+            self.flash(t("max_bands", n=MAX_FILTERS))
+            return
+        filters.append(new_filter(clamp(freq, F_MIN, F_MAX), clamp(gain, G_MIN, G_MAX)))
+        self.selected = len(filters) - 1
+        self.refresh_editor()
+        self.changed()
+
+    def remove_band(self, i):
+        filters = self.channel()["filters"]
+        if len(filters) <= 1 or not 0 <= i < len(filters):
+            return
+        filters.pop(i)
+        self.selected = min(self.selected if self.selected < i else max(0, self.selected - 1), len(filters) - 1)
+        self.refresh_editor()
+        self.changed()
+
+    def rebuild_band_buttons(self, count):
+        """Botões 1..N das bandas, em linhas de até 16."""
+        for b in self.sel_btns:
+            b.destroy()
+        self.sel_btns = []
+        for i in range(count):
+            b = tk.Label(self.band_frame, text=str(i + 1), width=3, bg=COLORS["panel2"], fg=COLORS["fg"],
+                         font=("Segoe UI Semibold", 10), cursor="hand2", pady=3)
+            b.grid(row=i // 16, column=i % 16, padx=2, pady=2)
+            b.bind("<Button-1>", lambda e, i=i: self.select(i))
+            self.sel_btns.append(b)
 
     def select(self, i):
         self.selected = i
@@ -925,11 +980,16 @@ class App(tk.Tk):
 
     def refresh_editor(self):
         self._loading = True
-        f = self.channel()["filters"][self.selected]
+        filters = self.channel()["filters"]
+        self.selected = clamp(self.selected, 0, len(filters) - 1)
+        if len(self.sel_btns) != len(filters):
+            self.rebuild_band_buttons(len(filters))
+        self.remove_btn.configure(state="normal" if len(filters) > 1 else "disabled")
+        f = filters[self.selected]
         for i, b in enumerate(self.sel_btns):
-            on = self.channel()["filters"][i]["enabled"]
+            on = filters[i]["enabled"]
             if i == self.selected:
-                b.configure(bg=POINT_COLORS[i], fg="#111")
+                b.configure(bg=point_color(i), fg="#111")
             else:
                 b.configure(bg=COLORS["panel2"], fg=COLORS["fg"] if on else COLORS["off"])
         self.f_enabled.set(f["enabled"])

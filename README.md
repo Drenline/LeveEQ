@@ -13,8 +13,8 @@
 
 ### O que é
 
-O LeveEQ é um equalizador paramétrico de 10 bandas para o seu fone e para o seu
-microfone, com o mesmo estilo do equalizador do SteelSeries Sonar (dentro do
+O LeveEQ é um equalizador paramétrico para o seu fone e para o seu microfone,
+com quantas bandas você quiser, com o mesmo estilo do equalizador do SteelSeries Sonar (dentro do
 SteelSeries GG), só que muito mais leve.
 
 Eu gostava muito do equalizador do Sonar, mas o GG inteiro pesava demais no meu PC.
@@ -38,12 +38,15 @@ possa ser melhorado, sugestões e correções são muito bem-vindas.
 
 ### Funcionalidades
 
-- **10 filtros paramétricos** por dispositivo. Cada filtro tem tipo, frequência,
+- **Bandas paramétricas à vontade**: começa com 10 por dispositivo, e você pode
+  adicionar até 50 ou remover as que não usa. Cada banda tem tipo, frequência,
   ganho e Q.
 - **Tipos de filtro**: Pico (Bell), Shelf grave, Shelf agudo, Passa-alta,
   Passa-baixa, Notch, Passa-banda (0 dB e pico Q) e Passa-tudo.
 - **Gráfico interativo**: arraste os pontos para mudar frequência e ganho, use a roda
-  do mouse para mudar o Q e dê duplo clique para ligar ou desligar o filtro.
+  do mouse para mudar o Q e dê duplo clique para ligar ou desligar o filtro. Duplo
+  clique num lugar vazio cria uma banda nova ali, e o botão direito num ponto remove
+  a banda.
 - **Fone e microfone** em abas separadas.
 - **Um EQ por dispositivo**: cada fone ou microfone guarda o próprio ajuste, e todos
   funcionam ao mesmo tempo. Se você trocar o fone de entrada (por exemplo, do headset
@@ -191,8 +194,8 @@ separado, de seus próprios autores.
 
 ![LeveEQ in English](docs/screenshot-en.png)
 
-LeveEQ ("leve" means "light" in Portuguese) is a 10-band parametric equalizer for your
-headphones and your microphone. It works in the style of the SteelSeries Sonar
+LeveEQ ("leve" means "light" in Portuguese) is a parametric equalizer for your
+headphones and your microphone, with as many bands as you want. It works in the style of the SteelSeries Sonar
 equalizer (part of SteelSeries GG), but it is much lighter.
 
 I really liked Sonar's equalizer, but the whole GG suite was too heavy for my PC, and
@@ -216,12 +219,15 @@ something that could be better, suggestions and fixes are very welcome.
 
 ### Features
 
-- **10 parametric filters** per device. Each filter has a type, frequency, gain
-  and Q.
+- **As many parametric bands as you want**: each device starts with 10, and you
+  can add up to 50 or remove the ones you don't use. Each band has a type,
+  frequency, gain and Q.
 - **Filter types**: Peak (Bell), Low shelf, High shelf, High-pass, Low-pass, Notch,
   Band-pass (0 dB and Q peak) and All-pass.
 - **Interactive graph**: drag the points to change frequency and gain, use the mouse
   wheel to change Q, and double-click a point to turn its filter on or off.
+  Double-click empty space to add a band there, and right-click a point to
+  remove it.
 - **Headphones and microphone** in separate tabs.
 - **One EQ per device**: each headset or microphone keeps its own settings, and all of
   them work at the same time. If you move your headphones to another output (for
