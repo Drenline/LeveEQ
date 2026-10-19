@@ -105,7 +105,8 @@ Sonar) e lê os presets dessa cópia. Ele nunca altera nada do GG.
 
 1. Baixe este repositório: botão verde **Code > Download ZIP**.
 2. **Extraia o ZIP inteiro** numa pasta.
-3. Dê dois cliques em **`Instalar-LeveEQ.bat`**. O instalador:
+3. Dê dois cliques em **`Instalar-LeveEQ.bat`**. Você não precisa instalar nada
+   manualmente. O que o instalador faz sozinho:
    - procura o Python 3.8+ e, se não encontrar, oferece instalar pelo `winget` ou
      abre o site do Python;
    - instala as bibliotecas `pystray` e `pillow`;
@@ -289,7 +290,8 @@ and reads the presets from that copy. It never changes anything in GG.
 
 1. Download this repository: green **Code > Download ZIP** button.
 2. **Extract the whole ZIP** to a folder.
-3. Double-click **`Instalar-LeveEQ.bat`**. The installer:
+3. Double-click **`Instalar-LeveEQ.bat`**. You don't need to install anything by
+   hand. Here is what the installer does for you:
    - looks for Python 3.8+ and, if it is missing, offers to install it with `winget`
      or opens the Python website;
    - installs the `pystray` and `pillow` libraries;
