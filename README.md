@@ -57,6 +57,8 @@ possa ser melhorado, sugestões e correções são muito bem-vindas.
 - **Ícone na bandeja** perto do relógio: abrir, ligar ou desligar o EQ e sair.
   Fechar a janela só esconde o app.
 - **Mudanças aplicadas na hora**, enquanto você arrasta os pontos.
+- **Português e inglês**: troque o idioma no seletor 🌐 no canto superior direito. Na
+  primeira vez, o app usa o idioma do Windows.
 
 ### Como funciona
 
@@ -145,7 +147,8 @@ O Equalizer APO continua instalado. Se quiser removê-lo, desinstale pelo Window
 O app **não acessa a internet**, não coleta dados e não precisa de administrador. Só
 o instalador usa a internet, para baixar as bibliotecas Python pelo `pip` e para abrir
 as páginas de download. O código inteiro está em um único arquivo, o `leveeq.pyw`,
-comentado em português.
+comentado em português. Os textos da interface ficam todos juntos no início do arquivo
+(`STRINGS`), então dá para adicionar um novo idioma facilmente.
 
 ### Diferenças para o Sonar
 
@@ -185,6 +188,8 @@ separado, de seus próprios autores.
 ## English
 
 ### What it is
+
+![LeveEQ in English](docs/screenshot-en.png)
 
 LeveEQ ("leve" means "light" in Portuguese) is a 10-band parametric equalizer for your
 headphones and your microphone. It works in the style of the SteelSeries Sonar
@@ -232,6 +237,8 @@ something that could be better, suggestions and fixes are very welcome.
 - **Tray icon** next to the clock: open, turn the EQ on or off, and quit. Closing the
   window only hides the app.
 - **Changes apply instantly**, even while you drag the points.
+- **Portuguese and English**: switch the language with the 🌐 selector in the top-right
+  corner. On first launch, the app follows your Windows language.
 
 ### How it works
 
@@ -318,7 +325,8 @@ Equalizer APO stays installed. If you want to remove it, uninstall it from Windo
 The app **does not access the internet**, collects no data and needs no administrator
 rights. Only the installer goes online, to download the Python libraries with `pip`
 and to open download pages. All of the code is in one file, `leveeq.pyw`, with
-comments in Portuguese.
+comments in Portuguese. All interface texts are together at the top of the file
+(`STRINGS`), so adding a new language is easy: copy the `"en"` block and translate it.
 
 ### Differences from Sonar
 

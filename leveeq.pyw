@@ -46,19 +46,126 @@ G_MIN, G_MAX = -12.0, 12.0
 Q_MIN, Q_MAX = 0.5, 10.0
 N_FILTERS = 10
 
-# tipo interno (mesmos nomes do FilterType do Sonar) -> (rótulo, usa ganho?)
-FILTER_TYPES = {
-    "peakingEQ": ("Pico (Bell)", True),
-    "lowShelving": ("Shelf grave", True),
-    "highShelving": ("Shelf agudo", True),
-    "lowPass": ("Passa-baixa", False),
-    "highPass": ("Passa-alta", False),
-    "notchFilter": ("Notch", False),
-    "bandPassPeak0dB": ("Passa-banda (0 dB)", False),
-    "bandPassPeakQ": ("Passa-banda (pico Q)", False),
-    "allPass": ("Passa-tudo", False),
+# ---------------------------------------------------------------- idiomas
+# Para adicionar um idioma: copie o bloco "en", traduza os textos e adicione o
+# nome dele em LANG_NAMES. Textos que faltarem aparecem em inglês.
+LANG_NAMES = {"pt": "Português", "en": "English"}
+STRINGS = {
+    "pt": {
+        "tab_out": "🎧  Fone", "tab_mic": "🎙  Microfone",
+        "power": "EQ ligado (geral)", "language": "🌐",
+        "device": "Dispositivo", "active": "Ativo", "preset": "Preset",
+        "save": "Salvar", "delete": "Excluir", "import_sonar": "Importar do Sonar",
+        "graph_hint": "Arraste os pontos • roda do mouse = Q • duplo clique = liga/desliga o filtro",
+        "filter_on": "Filtro ligado", "type": "Tipo", "freq": "Frequência (Hz)", "gain": "Ganho (dB)", "q": "Q",
+        "reset_filter": "Zerar filtro", "reset_all": "Zerar tudo",
+        "preamp": "Ganho geral", "bass": "Graves", "clarity": "Voz (clareza)", "treble": "Agudos",
+        "headroom": "Evitar distorção (reduz o volume)",
+        "mic_hint": "Dica: um passa-alta em ~80 Hz no filtro 1 corta ruído de mesa e respiração.",
+        "disconnected": "(dispositivo desconectado)",
+        "confirm_reset_all": "Zerar todos os filtros deste dispositivo?",
+        "preset_name": "Nome do preset:", "preset_saved": "Preset “{name}” salvo",
+        "confirm_delete": "Excluir o preset “{name}”?",
+        "sonar_read_error": "Não consegui ler o banco do Sonar:\n{err}",
+        "sonar_none": "Nenhuma configuração do Sonar encontrada para este canal.",
+        "apo_missing": "Equalizer APO não encontrado", "applied": "● aplicado", "write_error": "erro ao gravar: {err}",
+        "warn_no_apo": "O Equalizer APO não está instalado.\n\n"
+                       "Ele é o motor de áudio leve que este app controla (gratuito e open source).\n"
+                       "Instale em https://sourceforge.net/projects/equalizerapo/ e, no Configurator, "
+                       "marque o seu fone e o seu microfone. Depois reinicie o PC e abra o LeveEQ de novo.\n\n"
+                       "Você já pode montar e salvar presets enquanto isso.",
+        "tray_open": "Abrir LeveEQ", "tray_power": "EQ ligado", "tray_quit": "Sair (desliga o EQ)",
+        "tray_on": "EQ ligado", "tray_off": "EQ desligado",
+        "tray_hint": "O LeveEQ continua ligado aqui na bandeja. "
+                     "Clique com o botão direito no ícone para desligar ou sair.",
+        "picker_title": "Importar do SteelSeries Sonar", "picker_choose": "Escolha uma configuração do Sonar:",
+        "search": "🔍 Buscar", "only_mine": "Só as minhas (esconder presets de fábrica)",
+        "import": "Importar", "cancel": "Cancelar", "imported": "Importado: {name}",
+        "already_open": "O LeveEQ já está aberto.\n\nProcure o ícone laranja perto do relógio "
+                        "(talvez dentro da setinha ^) e clique nele.",
+        "vad_1": "Jogo", "vad_2": "Chat (saída)", "vad_3": "Microfone", "vad_4": "Mídia", "vad_5": "Aux",
+        "ft_peakingEQ": "Pico (Bell)", "ft_lowShelving": "Shelf grave", "ft_highShelving": "Shelf agudo",
+        "ft_lowPass": "Passa-baixa", "ft_highPass": "Passa-alta", "ft_notchFilter": "Notch",
+        "ft_bandPassPeak0dB": "Passa-banda (0 dB)", "ft_bandPassPeakQ": "Passa-banda (pico Q)",
+        "ft_allPass": "Passa-tudo",
+    },
+    "en": {
+        "tab_out": "🎧  Headphones", "tab_mic": "🎙  Microphone",
+        "power": "EQ on (global)", "language": "🌐",
+        "device": "Device", "active": "Active", "preset": "Preset",
+        "save": "Save", "delete": "Delete", "import_sonar": "Import from Sonar",
+        "graph_hint": "Drag the points • mouse wheel = Q • double-click = turn the filter on/off",
+        "filter_on": "Filter on", "type": "Type", "freq": "Frequency (Hz)", "gain": "Gain (dB)", "q": "Q",
+        "reset_filter": "Reset filter", "reset_all": "Reset all",
+        "preamp": "Overall gain", "bass": "Bass", "clarity": "Voice (clarity)", "treble": "Treble",
+        "headroom": "Avoid distortion (lowers volume)",
+        "mic_hint": "Tip: a high-pass at ~80 Hz on filter 1 cuts desk rumble and breathing noise.",
+        "disconnected": "(device disconnected)",
+        "confirm_reset_all": "Reset all filters for this device?",
+        "preset_name": "Preset name:", "preset_saved": "Preset “{name}” saved",
+        "confirm_delete": "Delete preset “{name}”?",
+        "sonar_read_error": "Could not read the Sonar database:\n{err}",
+        "sonar_none": "No Sonar settings found for this channel.",
+        "apo_missing": "Equalizer APO not found", "applied": "● applied", "write_error": "could not save: {err}",
+        "warn_no_apo": "Equalizer APO is not installed.\n\n"
+                       "It is the lightweight audio engine this app controls (free and open source).\n"
+                       "Install it from https://sourceforge.net/projects/equalizerapo/ and, in the Configurator, "
+                       "select your headphones and microphone. Then restart your PC and open LeveEQ again.\n\n"
+                       "You can already build and save presets in the meantime.",
+        "tray_open": "Open LeveEQ", "tray_power": "EQ on", "tray_quit": "Quit (turns EQ off)",
+        "tray_on": "EQ on", "tray_off": "EQ off",
+        "tray_hint": "LeveEQ is still running here in the tray. "
+                     "Right-click the icon to turn it off or quit.",
+        "picker_title": "Import from SteelSeries Sonar", "picker_choose": "Choose a Sonar setting:",
+        "search": "🔍 Search", "only_mine": "Mine only (hide factory presets)",
+        "import": "Import", "cancel": "Cancel", "imported": "Imported: {name}",
+        "already_open": "LeveEQ is already open.\n\nLook for the orange icon next to the clock "
+                        "(maybe inside the ^ arrow) and click it.",
+        "vad_1": "Game", "vad_2": "Chat (output)", "vad_3": "Microphone", "vad_4": "Media", "vad_5": "Aux",
+        "ft_peakingEQ": "Peak (Bell)", "ft_lowShelving": "Low shelf", "ft_highShelving": "High shelf",
+        "ft_lowPass": "Low-pass", "ft_highPass": "High-pass", "ft_notchFilter": "Notch",
+        "ft_bandPassPeak0dB": "Band-pass (0 dB)", "ft_bandPassPeakQ": "Band-pass (Q peak)",
+        "ft_allPass": "All-pass",
+    },
 }
-TYPE_BY_LABEL = {v[0]: k for k, v in FILTER_TYPES.items()}
+LANG = "en"
+
+
+def system_lang():
+    """Idioma inicial: o do Windows, se tivermos tradução; senão, inglês."""
+    try:
+        import ctypes
+        primary = ctypes.windll.kernel32.GetUserDefaultUILanguage() & 0x3FF
+        return {0x16: "pt"}.get(primary, "en")
+    except (AttributeError, OSError):
+        return "en"
+
+
+def t(key, **kw):
+    s = STRINGS.get(LANG, {}).get(key) or STRINGS["en"][key]
+    return s.format(**kw) if kw else s
+
+
+# tipo interno (mesmos nomes do FilterType do Sonar) -> usa ganho?
+FILTER_TYPES = {
+    "peakingEQ": True,
+    "lowShelving": True,
+    "highShelving": True,
+    "lowPass": False,
+    "highPass": False,
+    "notchFilter": False,
+    "bandPassPeak0dB": False,
+    "bandPassPeakQ": False,
+    "allPass": False,
+}
+
+
+def type_label(tp):
+    return t("ft_" + tp)
+
+
+def type_from_label(label, default):
+    return next((tp for tp in FILTER_TYPES if type_label(tp) == label), default)
 # "bandPass" era o nome usado pelas versões antigas do LeveEQ
 SONAR_TYPE_ALIASES = {"bandPass": "bandPassPeak0dB", "byPass": None}
 
@@ -333,7 +440,6 @@ def ensure_apo_include(cfg_dir):
 
 # ---------------------------------------------------------------- Sonar import
 
-SONAR_VADS = {1: "Jogo", 2: "Chat (saída)", 3: "Microfone", 4: "Mídia", 5: "Aux"}
 
 
 def read_sonar_configs():
@@ -436,7 +542,7 @@ class EQGraph(tk.Canvas):
         return clamp(G_MAX - (y - self.PAD_T) / h * (G_MAX - G_MIN), G_MIN, G_MAX)
 
     def point_pos(self, f):
-        g = f["gain"] if FILTER_TYPES[f["type"]][1] else 0.0
+        g = f["gain"] if FILTER_TYPES[f["type"]] else 0.0
         return self.fx(f["frequency"]), self.gy(g)
 
     def redraw(self):
@@ -503,7 +609,7 @@ class EQGraph(tk.Canvas):
             return
         f = self.app.channel()["filters"][self.drag]
         f["frequency"] = round(self.xf(e.x), 1)
-        if FILTER_TYPES[f["type"]][1]:
+        if FILTER_TYPES[f["type"]]:
             f["gain"] = round(self.yg(e.y), 1)
         f["enabled"] = True
         self.app.changed(live=True)
@@ -545,6 +651,8 @@ class App(tk.Tk):
         self.minsize(820, 600)
         self.configure(bg=COLORS["bg"])
         self.cfg = self.load_state()
+        global LANG
+        LANG = self.cfg["lang"]
         self.scratch = {"out": default_channel("out"), "mic": default_channel("mic")}
         self.presets = load_json(PRESETS_FILE, {"out": {}, "mic": {}})
         self.kind = "out"
@@ -569,8 +677,9 @@ class App(tk.Tk):
     # ---- estado
     def load_state(self):
         s = load_json(STATE_FILE, {})
+        lang = s.get("lang") if s.get("lang") in LANG_NAMES else system_lang()
         st = {"power": s.get("power", True), "auto_headroom": s.get("auto_headroom", True),
-              "sel": {"out": "", "mic": ""}, "profiles": {}}
+              "lang": lang, "sel": {"out": "", "mic": ""}, "profiles": {}}
         st["sel"].update(s.get("sel", {}))
         for guid, data in s.get("profiles", {}).items():
             st["profiles"][guid] = self.normalize(data, data.get("kind", "out"), guid)
@@ -652,12 +761,19 @@ class App(tk.Tk):
         top.pack(fill="x")
         ttk.Label(top, text="LeveEQ", style="Title.TLabel").pack(side="left")
         self.tab_btns = {}
-        for k, label in (("out", "🎧  Fone"), ("mic", "🎙  Microfone")):
+        for k, label in (("out", t("tab_out")), ("mic", t("tab_mic"))):
             b = ttk.Button(top, text=label, style="Tab.TButton", command=lambda k=k: self.switch(k))
             b.pack(side="left", padx=(12 if k == "out" else 4, 0))
             self.tab_btns[k] = b
+        # seletor de idioma (canto direito)
+        self.lang_var = tk.StringVar(value=LANG_NAMES[LANG])
+        lang_cb = ttk.Combobox(top, textvariable=self.lang_var, state="readonly", width=10,
+                               values=list(LANG_NAMES.values()))
+        lang_cb.pack(side="right")
+        lang_cb.bind("<<ComboboxSelected>>", self.on_language)
+        ttk.Label(top, text=t("language")).pack(side="right", padx=(14, 4))
         self.power_var = tk.BooleanVar(value=self.cfg["power"])
-        ttk.Checkbutton(top, text="EQ ligado (geral)", variable=self.power_var, style="Bar.TCheckbutton",
+        ttk.Checkbutton(top, text=t("power"), variable=self.power_var, style="Bar.TCheckbutton",
                         command=self.on_power).pack(side="right")
         self.status = ttk.Label(top, text="", foreground=COLORS["muted"])
         self.status.pack(side="right", padx=14)
@@ -665,30 +781,30 @@ class App(tk.Tk):
         # linha: dispositivo + presets
         bar = ttk.Frame(self, style="Panel.TFrame", padding=(12, 8))
         bar.pack(fill="x", padx=14)
-        ttk.Label(bar, text="Dispositivo", style="Panel.TLabel").pack(side="left")
+        ttk.Label(bar, text=t("device"), style="Panel.TLabel").pack(side="left")
         self.dev_var = tk.StringVar()
         self.dev_combo = ttk.Combobox(bar, textvariable=self.dev_var, state="readonly", width=50)
         self.dev_combo.pack(side="left", padx=(8, 4))
         self.dev_combo.bind("<<ComboboxSelected>>", self.on_device)
         ttk.Button(bar, text="↻", width=3, command=self.reload_devices).pack(side="left")
         self.ch_enabled = tk.BooleanVar()
-        ttk.Checkbutton(bar, text="Ativo", variable=self.ch_enabled, command=self.on_ch_enabled).pack(side="left", padx=12)
+        ttk.Checkbutton(bar, text=t("active"), variable=self.ch_enabled, command=self.on_ch_enabled).pack(side="left", padx=12)
 
-        ttk.Button(bar, text="Importar do Sonar", command=self.import_sonar).pack(side="right")
-        ttk.Button(bar, text="Excluir", command=self.delete_preset).pack(side="right", padx=4)
-        ttk.Button(bar, text="Salvar", style="Accent.TButton", command=self.save_preset).pack(side="right", padx=4)
+        ttk.Button(bar, text=t("import_sonar"), command=self.import_sonar).pack(side="right")
+        ttk.Button(bar, text=t("delete"), command=self.delete_preset).pack(side="right", padx=4)
+        ttk.Button(bar, text=t("save"), style="Accent.TButton", command=self.save_preset).pack(side="right", padx=4)
         self.preset_var = tk.StringVar()
         self.preset_combo = ttk.Combobox(bar, textvariable=self.preset_var, state="readonly", width=22)
         self.preset_combo.pack(side="right", padx=4)
         self.preset_combo.bind("<<ComboboxSelected>>", self.on_preset)
-        ttk.Label(bar, text="Preset", style="Panel.TLabel").pack(side="right", padx=(12, 0))
+        ttk.Label(bar, text=t("preset"), style="Panel.TLabel").pack(side="right", padx=(12, 0))
 
         # gráfico
         gwrap = ttk.Frame(self, style="Panel.TFrame", padding=6)
         gwrap.pack(fill="both", expand=True, padx=14, pady=(8, 0))
         self.graph = EQGraph(gwrap, self)
         self.graph.pack(fill="both", expand=True)
-        ttk.Label(gwrap, text="Arraste os pontos • roda do mouse = Q • duplo clique = liga/desliga o filtro",
+        ttk.Label(gwrap, text=t("graph_hint"),
                   style="Muted.TLabel").pack(anchor="w", pady=(4, 0))
 
         # editor do filtro selecionado + extras
@@ -707,14 +823,14 @@ class App(tk.Tk):
             b.bind("<Button-1>", lambda e, i=i: self.select(i))
             self.sel_btns.append(b)
         self.f_enabled = tk.BooleanVar()
-        ttk.Checkbutton(row0, text="Filtro ligado", variable=self.f_enabled, command=self.on_field).pack(side="left", padx=12)
+        ttk.Checkbutton(row0, text=t("filter_on"), variable=self.f_enabled, command=self.on_field).pack(side="left", padx=12)
 
         row1 = ttk.Frame(ed, style="Panel.TFrame")
         row1.pack(fill="x", pady=(10, 0))
-        ttk.Label(row1, text="Tipo", style="Panel.TLabel").grid(row=0, column=0, sticky="w")
+        ttk.Label(row1, text=t("type"), style="Panel.TLabel").grid(row=0, column=0, sticky="w")
         self.f_type = tk.StringVar()
         cb = ttk.Combobox(row1, textvariable=self.f_type, state="readonly", width=19,
-                          values=[v[0] for v in FILTER_TYPES.values()])
+                          values=[type_label(tp) for tp in FILTER_TYPES])
         cb.grid(row=1, column=0, sticky="w", padx=(0, 14))
         cb.bind("<<ComboboxSelected>>", lambda e: self.on_field())
         self.f_freq = tk.DoubleVar()
@@ -722,9 +838,9 @@ class App(tk.Tk):
         self.f_q = tk.DoubleVar()
         self.spin_gain = None
         for col, (label, var, lo, hi, inc, fmt) in enumerate((
-                ("Frequência (Hz)", self.f_freq, F_MIN, F_MAX, 1, "%.1f"),
-                ("Ganho (dB)", self.f_gain, G_MIN, G_MAX, 0.1, "%.1f"),
-                ("Q", self.f_q, Q_MIN, Q_MAX, 0.01, "%.4f")), start=1):
+                (t("freq"), self.f_freq, F_MIN, F_MAX, 1, "%.1f"),
+                (t("gain"), self.f_gain, G_MIN, G_MAX, 0.1, "%.1f"),
+                (t("q"), self.f_q, Q_MIN, Q_MAX, 0.01, "%.4f")), start=1):
             ttk.Label(row1, text=label, style="Panel.TLabel").grid(row=0, column=col, sticky="w")
             sp = ttk.Spinbox(row1, textvariable=var, from_=lo, to=hi, increment=inc, format=fmt, width=10,
                              command=self.on_field)
@@ -733,17 +849,17 @@ class App(tk.Tk):
             sp.bind("<FocusOut>", lambda e: self.on_field())
             if var is self.f_gain:
                 self.spin_gain = sp
-        ttk.Button(row1, text="Zerar filtro", command=self.reset_filter).grid(row=1, column=4, padx=(6, 4))
-        ttk.Button(row1, text="Zerar tudo", command=self.reset_all).grid(row=1, column=5)
+        ttk.Button(row1, text=t("reset_filter"), command=self.reset_filter).grid(row=1, column=4, padx=(6, 4))
+        ttk.Button(row1, text=t("reset_all"), command=self.reset_all).grid(row=1, column=5)
 
         # painel lateral: ganho geral + Bass Boost / Voice Clarity / Treble Boost do Sonar
         side = ttk.Frame(bottom, style="Panel.TFrame", padding=12)
         side.pack(side="left", fill="y", padx=(8, 0))
         self.sliders = {}
-        for key, label, lo, hi in (("preamp", "Ganho geral", G_MIN, G_MAX), ("bass", "Graves", G_MIN, G_MAX),
-                                   ("clarity", "Voz (clareza)", G_MIN, G_MAX), ("treble", "Agudos", G_MIN, G_MAX)):
+        for key, label, lo, hi in (("preamp", t("preamp"), G_MIN, G_MAX), ("bass", t("bass"), G_MIN, G_MAX),
+                                   ("clarity", t("clarity"), G_MIN, G_MAX), ("treble", t("treble"), G_MIN, G_MAX)):
             fr = ttk.Frame(side, style="Panel.TFrame")
-            lab = ttk.Label(fr, text=label, style="Panel.TLabel", width=11)
+            lab = ttk.Label(fr, text=label, style="Panel.TLabel", width=14)
             lab.pack(side="left")
             var = tk.DoubleVar()
             sc = ttk.Scale(fr, from_=lo, to=hi, variable=var, length=130,
@@ -755,10 +871,10 @@ class App(tk.Tk):
             sc.bind("<Double-Button-1>", lambda e, k=key: self.reset_slider(k))
             self.sliders[key] = (fr, var, val)
         self.headroom_var = tk.BooleanVar()
-        self.headroom_chk = ttk.Checkbutton(side, text="Evitar distorção (reduz o volume)",
+        self.headroom_chk = ttk.Checkbutton(side, text=t("headroom"),
                                             variable=self.headroom_var, command=self.on_headroom)
         self.mic_hint = ttk.Label(side, style="Muted.TLabel", wraplength=300, justify="left",
-                                  text="Dica: um passa-alta em ~80 Hz no filtro 1 corta ruído de mesa e respiração.")
+                                  text=t("mic_hint"))
 
     # ---- ações
     def switch(self, kind):
@@ -785,7 +901,7 @@ class App(tk.Tk):
         sel = self.cfg["sel"][self.kind]
         cur = next((lab for lab, g in self.dev_choices if g == sel), "")
         if sel and not cur:
-            cur = "(dispositivo desconectado)"
+            cur = t("disconnected")
         self.dev_var.set(cur)
         self.ch_enabled.set(self.channel()["enabled"])
         self.preset_combo["values"] = sorted(self.presets.get(self.kind, {}))
@@ -817,7 +933,7 @@ class App(tk.Tk):
             else:
                 b.configure(bg=COLORS["panel2"], fg=COLORS["fg"] if on else COLORS["off"])
         self.f_enabled.set(f["enabled"])
-        self.f_type.set(FILTER_TYPES[f["type"]][0])
+        self.f_type.set(type_label(f["type"]))
         # o que aparece na tela é arredondado; guardamos o texto exibido para só
         # gravar de volta o campo que a pessoa realmente mudou (antes, ligar/desligar
         # um filtro arredondava a frequência e o Q dos presets importados do Sonar)
@@ -826,7 +942,7 @@ class App(tk.Tk):
         self.f_freq.set(self._shown["frequency"])
         self.f_gain.set(self._shown["gain"])
         self.f_q.set(self._shown["qFactor"])
-        self.spin_gain.configure(state="normal" if FILTER_TYPES[f["type"]][1] else "disabled")
+        self.spin_gain.configure(state="normal" if FILTER_TYPES[f["type"]] else "disabled")
         self._loading = False
 
     def on_field(self):
@@ -834,7 +950,7 @@ class App(tk.Tk):
             return
         f = self.channel()["filters"][self.selected]
         f["enabled"] = self.f_enabled.get()
-        f["type"] = TYPE_BY_LABEL.get(self.f_type.get(), f["type"])
+        f["type"] = type_from_label(self.f_type.get(), f["type"])
         for key, var, lo, hi in (("frequency", self.f_freq, F_MIN, F_MAX), ("gain", self.f_gain, G_MIN, G_MAX),
                                  ("qFactor", self.f_q, Q_MIN, Q_MAX)):
             try:
@@ -845,6 +961,21 @@ class App(tk.Tk):
                 f[key] = clamp(v, lo, hi)
         self.refresh_editor()
         self.changed()
+
+    def on_language(self, _e=None):
+        """Troca o idioma e reconstrói a janela na hora (o EQ continua funcionando)."""
+        global LANG
+        code = next((c for c, name in LANG_NAMES.items() if name == self.lang_var.get()), LANG)
+        if code == LANG:
+            return
+        LANG = self.cfg["lang"] = code
+        save_json(STATE_FILE, self.cfg)
+        for w in self.winfo_children():
+            if not isinstance(w, tk.Toplevel):
+                w.destroy()
+        self.build()
+        self.refresh_all()
+        self.update_tray()
 
     def on_headroom(self):
         self.channel()["headroom"] = self.headroom_var.get()
@@ -868,7 +999,7 @@ class App(tk.Tk):
         self.changed()
 
     def reset_all(self):
-        if messagebox.askyesno(APP_NAME, "Zerar todos os filtros deste dispositivo?"):
+        if messagebox.askyesno(APP_NAME, t("confirm_reset_all")):
             self.set_channel(default_channel(self.kind))
             self.refresh_all()
             self.changed()
@@ -901,7 +1032,7 @@ class App(tk.Tk):
 
     # ---- presets
     def save_preset(self):
-        name = simpledialog.askstring(APP_NAME, "Nome do preset:", initialvalue=self.preset_var.get() or "", parent=self)
+        name = simpledialog.askstring(APP_NAME, t("preset_name"), initialvalue=self.preset_var.get() or "", parent=self)
         if not name:
             return
         data = json.loads(json.dumps(self.channel()))
@@ -913,7 +1044,7 @@ class App(tk.Tk):
         self.changed()
         self.preset_combo["values"] = sorted(self.presets[self.kind])
         self.preset_var.set(name)
-        self.flash(f"Preset “{name}” salvo")
+        self.flash(t("preset_saved", name=name))
 
     def on_preset(self, _e=None):
         p = self.presets.get(self.kind, {}).get(self.preset_var.get())
@@ -924,7 +1055,7 @@ class App(tk.Tk):
 
     def delete_preset(self):
         name = self.preset_var.get()
-        if name and messagebox.askyesno(APP_NAME, f"Excluir o preset “{name}”?"):
+        if name and messagebox.askyesno(APP_NAME, t("confirm_delete", name=name)):
             self.presets[self.kind].pop(name, None)
             save_json(PRESETS_FILE, self.presets)
             self.refresh_all()
@@ -939,12 +1070,12 @@ class App(tk.Tk):
         try:
             configs = read_sonar_configs()
         except (OSError, sqlite3.Error) as ex:
-            messagebox.showerror(APP_NAME, f"Não consegui ler o banco do Sonar:\n{ex}")
+            messagebox.showerror(APP_NAME, t("sonar_read_error", err=ex))
             return
         want = (3,) if self.kind == "mic" else (1, 2, 4, 5)
         configs = [c for c in configs if c["vad"] in want]
         if not configs:
-            messagebox.showinfo(APP_NAME, "Nenhuma configuração do Sonar encontrada para este canal.")
+            messagebox.showinfo(APP_NAME, t("sonar_none"))
             return
         SonarPicker(self, configs)
 
@@ -959,14 +1090,14 @@ class App(tk.Tk):
         self._write_job = None
         save_json(STATE_FILE, self.cfg)
         if not self.apo_dir:
-            self.status.configure(text="Equalizer APO não encontrado", foreground="#ff5b6b")
+            self.status.configure(text=t("apo_missing"), foreground="#ff5b6b")
             return
         try:
             ensure_apo_include(self.apo_dir)
             write_apo_file(os.path.join(self.apo_dir, APO_INCLUDE_NAME), build_apo_config(self.cfg, self.device_names()))
-            self.status.configure(text="● aplicado", foreground="#7ad35a")
+            self.status.configure(text=t("applied"), foreground="#7ad35a")
         except OSError as ex:
-            self.status.configure(text=f"erro ao gravar: {ex.strerror}", foreground="#ff5b6b")
+            self.status.configure(text=t("write_error", err=ex.strerror), foreground="#ff5b6b")
             # o APO pode estar lendo o arquivo neste instante: tenta de novo
             self._write_job = self.after(300, self.write_config)
 
@@ -975,12 +1106,7 @@ class App(tk.Tk):
         self.after(2500, lambda: self.status.configure(text=""))
 
     def warn_no_apo(self):
-        messagebox.showwarning(APP_NAME,
-            "O Equalizer APO não está instalado.\n\n"
-            "Ele é o motor de áudio leve que este app controla (gratuito e open source).\n"
-            "Instale em https://sourceforge.net/projects/equalizerapo/ e, no Configurator, "
-            "marque o seu fone e o seu microfone. Depois reinicie o PC e abra o LeveEQ de novo.\n\n"
-            "Você já pode montar e salvar presets enquanto isso.")
+        messagebox.showwarning(APP_NAME, t("warn_no_apo"))
 
     # ---- bandeja (área perto do relógio)
     @staticmethod
@@ -998,17 +1124,17 @@ class App(tk.Tk):
         # os cliques no ícone chegam em outra thread: vão para a fila e o Tk executa
         post = lambda fn: (lambda icon, item: self._tray_q.put(fn))
         menu = pystray.Menu(
-            pystray.MenuItem("Abrir LeveEQ", post(self.show_window), default=True),
-            pystray.MenuItem("EQ ligado", post(self.toggle_power), checked=lambda item: self.cfg["power"]),
+            pystray.MenuItem(lambda item: t("tray_open"), post(self.show_window), default=True),
+            pystray.MenuItem(lambda item: t("tray_power"), post(self.toggle_power), checked=lambda item: self.cfg["power"]),
             pystray.Menu.SEPARATOR,
-            pystray.MenuItem("Sair (desliga o EQ)", post(self.quit_app)),
+            pystray.MenuItem(lambda item: t("tray_quit"), post(self.quit_app)),
         )
         self.tray = pystray.Icon(APP_NAME, self.tray_image(self.cfg["power"]), self.tray_title(), menu)
         self.tray.run_detached()
         self.after(100, self.poll_tray)
 
     def tray_title(self):
-        return f"{APP_NAME} — EQ {'ligado' if self.cfg['power'] else 'desligado'}"
+        return f"{APP_NAME} — {t('tray_on') if self.cfg['power'] else t('tray_off')}"
 
     def update_tray(self):
         if self.tray:
@@ -1039,8 +1165,7 @@ class App(tk.Tk):
         if not self._tray_hint_shown:
             self._tray_hint_shown = True
             try:
-                self.tray.notify("O LeveEQ continua ligado aqui na bandeja. "
-                                 "Clique com o botão direito no ícone para desligar ou sair.", APP_NAME)
+                self.tray.notify(t("tray_hint"), APP_NAME)
             except Exception:
                 pass
 
@@ -1067,14 +1192,14 @@ class SonarPicker(tk.Toplevel):
     def __init__(self, app, configs):
         super().__init__(app)
         self.app, self.configs = app, configs
-        self.title("Importar do SteelSeries Sonar")
+        self.title(t("picker_title"))
         self.configure(bg=COLORS["bg"])
         self.geometry("460x480")
         self.transient(app)
-        ttk.Label(self, text="Escolha uma configuração do Sonar:", padding=10).pack(anchor="w")
+        ttk.Label(self, text=t("picker_choose"), padding=10).pack(anchor="w")
         sf = ttk.Frame(self)
         sf.pack(fill="x", padx=10, pady=(0, 6))
-        ttk.Label(sf, text="🔍 Buscar").pack(side="left")
+        ttk.Label(sf, text=t("search")).pack(side="left")
         self.search = tk.StringVar()
         self.search.trace_add("write", lambda *a: self.fill())
         se = tk.Entry(sf, textvariable=self.search, bg=COLORS["panel2"], fg=COLORS["fg"],
@@ -1082,7 +1207,7 @@ class SonarPicker(tk.Toplevel):
         se.pack(side="left", fill="x", expand=True, padx=(8, 0), ipady=3)
         se.focus_set()
         self.only_mine = tk.BooleanVar(value=True)
-        ttk.Checkbutton(self, text="Só as minhas (esconder presets de fábrica)", variable=self.only_mine,
+        ttk.Checkbutton(self, text=t("only_mine"), variable=self.only_mine,
                         style="Bar.TCheckbutton", command=self.fill).pack(anchor="w", padx=10)
         self.lb = tk.Listbox(self, bg=COLORS["panel"], fg=COLORS["fg"], selectbackground=COLORS["accent"],
                              selectforeground="#111", highlightthickness=0, borderwidth=0, font=("Segoe UI", 10))
@@ -1090,8 +1215,8 @@ class SonarPicker(tk.Toplevel):
         self.lb.bind("<Double-Button-1>", lambda e: self.ok())
         bf = ttk.Frame(self, padding=10)
         bf.pack(fill="x")
-        ttk.Button(bf, text="Importar", style="Accent.TButton", command=self.ok).pack(side="right")
-        ttk.Button(bf, text="Cancelar", command=self.destroy).pack(side="right", padx=6)
+        ttk.Button(bf, text=t("import"), style="Accent.TButton", command=self.ok).pack(side="right")
+        ttk.Button(bf, text=t("cancel"), command=self.destroy).pack(side="right", padx=6)
         self.fill()
 
     def fill(self):
@@ -1102,7 +1227,7 @@ class SonarPicker(tk.Toplevel):
         else:
             self.shown = [c for c in self.configs if not (self.only_mine.get() and c["is_preset"])] or self.configs
         for c in self.shown:
-            self.lb.insert("end", f"{c['name']}   —   {SONAR_VADS.get(c['vad'], c['vad'])}")
+            self.lb.insert("end", f"{c['name']}   —   {t('vad_%s' % c['vad']) if c['vad'] in (1, 2, 3, 4, 5) else c['vad']}")
 
     def ok(self):
         sel = self.lb.curselection()
@@ -1115,7 +1240,7 @@ class SonarPicker(tk.Toplevel):
         self.app.preset_var.set(c["name"])
         self.app.apply_channel(ch)
         self.app.preset_combo["values"] = sorted(self.app.presets[self.app.kind])
-        self.app.flash(f"Importado: {c['name']}")
+        self.app.flash(t("imported", name=c["name"]))
         self.destroy()
 
 
@@ -1130,10 +1255,11 @@ if __name__ == "__main__":
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
         except (AttributeError, OSError):
             pass
+        _saved_lang = load_json(STATE_FILE, {}).get("lang")
+        LANG = _saved_lang if _saved_lang in LANG_NAMES else system_lang()
         # só uma cópia aberta por vez (senão aparecem dois ícones na bandeja)
         _mutex = ctypes.windll.kernel32.CreateMutexW(None, False, "LeveEQ_single_instance")
         if ctypes.windll.kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
-            ctypes.windll.user32.MessageBoxW(None, "O LeveEQ já está aberto.\n\nProcure o ícone laranja perto do "
-                                             "relógio (talvez dentro da setinha ^) e clique nele.", APP_NAME, 0x40)
+            ctypes.windll.user32.MessageBoxW(None, t("already_open"), APP_NAME, 0x40)
             sys.exit(0)
     App().mainloop()
