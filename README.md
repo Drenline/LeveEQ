@@ -59,6 +59,9 @@ possa ser melhorado, sugestões e correções são muito bem-vindas.
   busca por nome.
 - **Ícone na bandeja** perto do relógio: abrir, ligar ou desligar o EQ e sair.
   Fechar a janela só esconde o app.
+- **Iniciar com o Windows**: marque a opção no topo da janela (ou no menu do ícone da
+  bandeja). Ao ligar o PC, o LeveEQ abre direto na bandeja, sem mostrar a janela, e o
+  EQ já começa funcionando.
 - **Mudanças aplicadas na hora**, enquanto você arrasta os pontos.
 - **Português e inglês**: troque o idioma no seletor 🌐 no canto superior direito. Na
   primeira vez, o app usa o idioma do Windows.
@@ -112,8 +115,8 @@ Sonar) e lê os presets dessa cópia. Ele nunca altera nada do GG.
    - instala as bibliotecas `pystray` e `pillow`;
    - copia o LeveEQ para `%LOCALAPPDATA%\Programs\LeveEQ` (não precisa de
      administrador);
-   - cria os atalhos na Área de Trabalho e no menu Iniciar e, se você quiser, para
-     abrir junto com o Windows;
+   - cria os atalhos na Área de Trabalho e no menu Iniciar;
+   - pergunta se o LeveEQ deve iniciar com o Windows (dá para mudar depois no app);
    - verifica se o Equalizer APO está instalado e, se não estiver, abre a página
      de download.
 4. **Instale o Equalizer APO** (se ainda não tiver). No **Configurator** dele, marque
@@ -145,7 +148,8 @@ O Equalizer APO continua instalado. Se quiser removê-lo, desinstale pelo Window
 | `%APPDATA%\LeveEQ\` | Seus ajustes (`estado.json`) e presets (`presets.json`) |
 | `C:\Program Files\EqualizerAPO\config\leveeq.txt` | Os filtros gerados para o Equalizer APO |
 | `C:\Program Files\EqualizerAPO\config\config.txt` | Passa a ter só `Include: leveeq.txt`. O original é guardado como `config.txt.antes-leveeq` |
-| Área de Trabalho / menu Iniciar / Inicializar | Atalhos `LeveEQ.lnk` |
+| Área de Trabalho / menu Iniciar | Atalhos `LeveEQ.lnk` |
+| Registro: `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` | Valor `LeveEQ`, só se você ligar "Iniciar com o Windows" |
 | Banco do Sonar (se existir) | **Só leitura**, a partir de uma cópia temporária |
 
 O app **não acessa a internet**, não coleta dados e não precisa de administrador. Só
@@ -243,6 +247,9 @@ something that could be better, suggestions and fixes are very welcome.
   search by name.
 - **Tray icon** next to the clock: open, turn the EQ on or off, and quit. Closing the
   window only hides the app.
+- **Start with Windows**: tick the option at the top of the window (or in the tray
+  icon menu). When your PC starts, LeveEQ opens straight to the tray without showing
+  the window, and the EQ is already working.
 - **Changes apply instantly**, even while you drag the points.
 - **Portuguese and English**: switch the language with the 🌐 selector in the top-right
   corner. On first launch, the app follows your Windows language.
@@ -296,8 +303,8 @@ and reads the presets from that copy. It never changes anything in GG.
      or opens the Python website;
    - installs the `pystray` and `pillow` libraries;
    - copies LeveEQ to `%LOCALAPPDATA%\Programs\LeveEQ` (no administrator needed);
-   - creates Desktop and Start menu shortcuts and, if you want, one to start with
-     Windows;
+   - creates Desktop and Start menu shortcuts;
+   - asks whether LeveEQ should start with Windows (you can change this later in the app);
    - checks whether Equalizer APO is installed and, if not, opens its download page.
 4. **Install Equalizer APO** (if you don't have it yet). In its **Configurator**,
    select your headphones (under *Playback devices*) and your microphone (under
@@ -327,7 +334,8 @@ Equalizer APO stays installed. If you want to remove it, uninstall it from Windo
 | `%APPDATA%\LeveEQ\` | Your settings (`estado.json`) and presets (`presets.json`) |
 | `C:\Program Files\EqualizerAPO\config\leveeq.txt` | The filters generated for Equalizer APO |
 | `C:\Program Files\EqualizerAPO\config\config.txt` | Changed to just `Include: leveeq.txt`. The original is kept as `config.txt.antes-leveeq` |
-| Desktop / Start menu / Startup | `LeveEQ.lnk` shortcuts |
+| Desktop / Start menu | `LeveEQ.lnk` shortcuts |
+| Registry: `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` | `LeveEQ` value, only if you turn on "Start with Windows" |
 | Sonar database (if present) | **Read only**, from a temporary copy |
 
 The app **does not access the internet**, collects no data and needs no administrator

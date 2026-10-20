@@ -34,6 +34,7 @@ echo  Configuracao do Equalizer APO restaurada / Equalizer APO config restored.
 
 :shortcuts
 powershell -NoProfile -Command "foreach ($d in 'Desktop','Programs','Startup') { $p = Join-Path ([Environment]::GetFolderPath($d)) 'LeveEQ.lnk'; if (Test-Path $p) { Remove-Item $p -Force } }"
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v LeveEQ /f >nul 2>&1
 echo  Atalhos removidos / Shortcuts removed.
 
 choice /c SN /n /m " Apagar tambem seus presets e ajustes? / Also delete your presets and settings? [S/N] "

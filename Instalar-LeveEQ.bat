@@ -73,13 +73,23 @@ if errorlevel 1 echo         (aviso: icone nao gerado / warning: icon not create
 rem ---------------------------------------------------------------- atalhos
 echo  [4/5] Criando atalhos / Creating shortcuts...
 set "LNK_DIRS='Desktop','Programs'"
-choice /c SN /n /m "         Abrir o LeveEQ junto com o Windows? / Start with Windows? [S/N] "
-if not errorlevel 2 set "LNK_DIRS='Desktop','Programs','Startup'"
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$q=[char]34; $ws=New-Object -ComObject WScript.Shell; foreach ($d in @(%LNK_DIRS%)) { $s=$ws.CreateShortcut((Join-Path ([Environment]::GetFolderPath($d)) 'LeveEQ.lnk')); $s.TargetPath=$env:PYW; $s.Arguments=$q+$env:DEST+'\leveeq.pyw'+$q; $s.WorkingDirectory=$env:DEST; $s.IconLocation=$env:DEST+'\leveeq.ico,0'; $s.Description='LeveEQ - equalizador de fone e microfone'; $s.Save() }"
 if errorlevel 1 (
     echo  [ERRO] Nao consegui criar os atalhos / Could not create shortcuts.
     goto :fail
 )
+
+rem iniciar com o Windows: mesma chave do registro que o app usa (abre direto na bandeja).
+rem Pode ser ligado/desligado depois pelo proprio LeveEQ.
+set "RUNKEY=HKCU\Software\Microsoft\Windows\CurrentVersion\Run"
+del "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\LeveEQ.lnk" >nul 2>&1
+choice /c SN /n /m "         Abrir o LeveEQ junto com o Windows? / Start with Windows? [S/N] "
+if errorlevel 2 goto :no_autostart
+reg add "%RUNKEY%" /v LeveEQ /t REG_SZ /d "\"%PYW%\" \"%DEST%\leveeq.pyw\" --tray" /f >nul
+goto :after_autostart
+:no_autostart
+reg delete "%RUNKEY%" /v LeveEQ /f >nul 2>&1
+:after_autostart
 
 rem ---------------------------------------------------------------- Equalizer APO
 echo  [5/5] Verificando o Equalizer APO / Checking Equalizer APO...

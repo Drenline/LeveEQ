@@ -78,6 +78,7 @@ STRINGS = {
                        "marque o seu fone e o seu microfone. Depois reinicie o PC e abra o LeveEQ de novo.\n\n"
                        "Você já pode montar e salvar presets enquanto isso.",
         "tray_open": "Abrir LeveEQ", "tray_power": "EQ ligado", "tray_quit": "Sair (desliga o EQ)",
+        "autostart": "Iniciar com o Windows",
         "tray_on": "EQ ligado", "tray_off": "EQ desligado",
         "tray_hint": "O LeveEQ continua ligado aqui na bandeja. "
                      "Clique com o botão direito no ícone para desligar ou sair.",
@@ -118,6 +119,7 @@ STRINGS = {
                        "select your headphones and microphone. Then restart your PC and open LeveEQ again.\n\n"
                        "You can already build and save presets in the meantime.",
         "tray_open": "Open LeveEQ", "tray_power": "EQ on", "tray_quit": "Quit (turns EQ off)",
+        "autostart": "Start with Windows",
         "tray_on": "EQ on", "tray_off": "EQ off",
         "tray_hint": "LeveEQ is still running here in the tray. "
                      "Right-click the icon to turn it off or quit.",
@@ -448,6 +450,52 @@ def ensure_apo_include(cfg_dir):
         shutil.copy2(main, main + ".antes-leveeq")
     with open(main, "w", encoding="utf-8") as fh:
         fh.write(inc + "\n")
+
+
+# ---------------------------------------------------------------- iniciar com o Windows
+RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
+
+
+def startup_shortcut():
+    """Atalho que versões antigas do instalador criavam na pasta Inicializar."""
+    return os.path.join(os.environ.get("APPDATA", ""), r"Microsoft\Windows\Start Menu\Programs\Startup\LeveEQ.lnk")
+
+
+def autostart_command():
+    exe = sys.executable
+    pyw = os.path.join(os.path.dirname(exe), "pythonw.exe")
+    exe = pyw if os.path.exists(pyw) else exe
+    return f'"{exe}" "{os.path.abspath(__file__)}" --tray'
+
+
+def autostart_enabled():
+    if winreg is None:
+        return False
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, RUN_KEY) as k:
+            winreg.QueryValueEx(k, APP_NAME)
+            return True
+    except OSError:
+        return os.path.exists(startup_shortcut())
+
+
+def set_autostart(on):
+    """Liga/desliga pela chave Run do usuário (não precisa de administrador)."""
+    if winreg is None:
+        return
+    with winreg.CreateKey(winreg.HKEY_CURRENT_USER, RUN_KEY) as k:
+        if on:
+            winreg.SetValueEx(k, APP_NAME, 0, winreg.REG_SZ, autostart_command())
+        else:
+            try:
+                winreg.DeleteValue(k, APP_NAME)
+            except OSError:
+                pass
+    if not on and os.path.exists(startup_shortcut()):
+        try:
+            os.remove(startup_shortcut())
+        except OSError:
+            pass
 
 
 # ---------------------------------------------------------------- Sonar import
@@ -797,6 +845,9 @@ class App(tk.Tk):
         lang_cb.pack(side="right")
         lang_cb.bind("<<ComboboxSelected>>", self.on_language)
         ttk.Label(top, text=t("language")).pack(side="right", padx=(14, 4))
+        self.autostart_var = tk.BooleanVar(value=autostart_enabled())
+        ttk.Checkbutton(top, text=t("autostart"), variable=self.autostart_var, style="Bar.TCheckbutton",
+                        command=self.on_autostart).pack(side="right", padx=(14, 0))
         self.power_var = tk.BooleanVar(value=self.cfg["power"])
         ttk.Checkbutton(top, text=t("power"), variable=self.power_var, style="Bar.TCheckbutton",
                         command=self.on_power).pack(side="right")
@@ -1064,6 +1115,15 @@ class App(tk.Tk):
             self.refresh_all()
             self.changed()
 
+    def on_autostart(self):
+        set_autostart(self.autostart_var.get())
+        self.autostart_var.set(autostart_enabled())
+        self.update_tray()
+
+    def toggle_autostart(self):
+        self.autostart_var.set(not autostart_enabled())
+        self.on_autostart()
+
     def on_power(self):
         self.cfg["power"] = self.power_var.get()
         self.update_tray()
@@ -1186,6 +1246,7 @@ class App(tk.Tk):
         menu = pystray.Menu(
             pystray.MenuItem(lambda item: t("tray_open"), post(self.show_window), default=True),
             pystray.MenuItem(lambda item: t("tray_power"), post(self.toggle_power), checked=lambda item: self.cfg["power"]),
+            pystray.MenuItem(lambda item: t("autostart"), post(self.toggle_autostart), checked=lambda item: autostart_enabled()),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem(lambda item: t("tray_quit"), post(self.quit_app)),
         )
@@ -1322,4 +1383,8 @@ if __name__ == "__main__":
         if ctypes.windll.kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
             ctypes.windll.user32.MessageBoxW(None, t("already_open"), APP_NAME, 0x40)
             sys.exit(0)
-    App().mainloop()
+    app = App()
+    # ao iniciar com o Windows, abre direto na bandeja (sem mostrar a janela)
+    if "--tray" in sys.argv and app.tray:
+        app.withdraw()
+    app.mainloop()
